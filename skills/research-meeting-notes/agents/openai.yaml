@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Meeting Notes"
+  short_description: "Transcribe discussions and trace decisions to the source"
+  default_prompt: "Use $research-meeting-notes to transcribe this discussion and summarize the findings, open questions, and next steps."

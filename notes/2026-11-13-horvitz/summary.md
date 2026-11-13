@@ -1,0 +1,32 @@
+# Office hours with Zach Horvitz · Summary
+
+**November 13, 2026** · COMS 6975, Natural Language Generation and Summarization · [Read the condensed dialogue](transcript.md) · [Read the source wording](source-transcript.md)
+
+**Recording times (New York)** · Clip A began at 3:55:17 p.m. and ran 27m 16s. Clip B began at 4:34:01 p.m. and ran 25m 59s. Both were recorded November 13, 2026. In Clip B, the opening of the switch to poetic constraints is in the segment starting at 15:08.864. Its first explicit description of constraining the reasoning is at 16:30.768.
+
+## Call to action
+
+**Peter, embed the English summaries you already have and compare them with the corresponding hearing passages.** Inspect the passages that cluster together. Then change the summary prompt to ask specifically about harm and see which groupings change. This was Zach’s immediate recommendation. Peter reported having the English summaries and a color-clustering control. He said he had yet to embed the hearings. [A04](transcript.md#a04) · [A07](transcript.md#a07)
+
+## Key highlights and themes
+
+| Research question | What the conversation established | What remained open |
+| --- | --- | --- |
+| Can the hearings reveal types of harm the existing categories miss? | Peter wants to discover distinctions from testimony. Other regions’ cases supply definitions and illustrative quotations. Zach suggested inspecting clusters before introducing those labels. | Whether the learned groupings agree with, refine, or depart from the expert categories. Peter described six types, but only five examples are intelligible. [A03](transcript.md#a03) · [A05](transcript.md#a05) · [A08](transcript.md#a08) · [A10](transcript.md#a10) |
+| What does the color control show? | Peter reported that fitting a one-to-five similarity score with L2 loss yielded visually clean color clusters on caption data. Zach asked what a changing text condition contributes if the target concept in the hearings is always harm. | Transfer to hearing testimony. A cluster of sentences about red clothing establishes a different and simpler result than a cluster of passages about family stigma. [A03](transcript.md#a03) · [A04](transcript.md#a04) · [A05](transcript.md#a05) |
+| What does a summary change? | Zach proposed comparing direct embeddings with embeddings of generic summaries, harm-focused summaries, and possibly summaries framed by restorative justice. Peter also floated adapting an ethical-framework fine-tuning method. | Whether prompting changes what testimony the summary preserves and which passages group together. The framework-conditioned arm was a hypothesis. [A07](transcript.md#a07) · [A09](transcript.md#a09) |
+| Can a translation model’s figurative choice be predicted? | Repeated generations give a rate of figurative translation for a prompt. Zach suggested predicting that rate from the prompt’s hidden state and from sparse autoencoder (SAE) features, then testing transfer across languages. | Whether either probe predicts the rate and whether it transfers. Steering would be a later experiment. The exchange did not establish a novelty claim. [B01](transcript.md#b01) · [B02](transcript.md#b02) · [B03](transcript.md#b03) · [B05](transcript.md#b05) |
+| Do poetic constraints change reasoning accuracy? | The student reported early examples of alliteration working, anaphora improving with a supplied phrase, and difficulty with couplets and syllable counts. Zach asked how often each model obeys the constraint before interpreting answer accuracy. | The student reported too few examples to judge accuracy. Comparing a constrained generation with an ordinary answer rewritten into the same style could help locate the difficulty. [B07](transcript.md#b07) · [B08](transcript.md#b08) · [B09](transcript.md#b09) |
+
+## Next steps discussed
+
+| Who | Proposed next step | Status in the conversation |
+| --- | --- | --- |
+| Peter | Read Jessica Dai and colleagues’ study of themes over time in r/ChatGPT. | Peter explicitly said he would look at it. [A01](transcript.md#a01) · [Paper](https://proceedings.mlr.press/v306/dai26d.html) |
+| Peter | Compare hearing passages, existing generic summaries, and harm-focused summaries. Visualize each set of embeddings and inspect what the clusters contain. | Zach’s first recommendation. Peter described these experiments as planned. [A07](transcript.md#a07) · [A08](transcript.md#a08) |
+| Peter | Try the restorative-justice prompt as an additional comparison if time permits. Separately, try a codebook-guided LLM with an “other” category and examine what lands there. | Suggested comparisons. Peter’s proposal to fine-tune on an ethical reasoning framework was a separate, more involved option. [A06](transcript.md#a06) · [A09](transcript.md#a09) |
+| Peter and potential collaborators | Examine what expert feedback adds once the unlabeled groupings are visible. Consider a later qualitative study comparing model reasoning with human or legal judgments. | Exploratory directions. The group did not assign collaborators or set a delivery date. [A08](transcript.md#a08) · [A10](transcript.md#a10) |
+| Student discussing translation | Sample roughly 10–20 outputs per prompt, label figurative choices and spot-check the labels. Estimate baseline rates, compare hidden-state and SAE probes, and test transfer across languages. | Advice for the midterm. One well-studied model was considered sufficient. Prompts or activation steering could come later. [B01](transcript.md#b01) · [B05](transcript.md#b05) · [B06](transcript.md#b06) |
+| Student discussing poetic constraints | Reuse the same device prompts across models. Report adherence rates. Where adherence is regular, compare answer accuracy against ordinary chain-of-thought and a direct answer without chain-of-thought. Try the rewrite control on a subset. | The student agreed to try different models. No accuracy result or scope for a full evaluation was reported. [B07](transcript.md#b07) · [B08](transcript.md#b08) · [B09](transcript.md#b09) |
+
+The second attachment changes research topics partway through. The text does not establish whether the same student presented both. Peter and Zach discussed a possible small language model for summarization or tagging and a tentative search starting from “harm” and about thirty related words to locate candidate passages (Clip A, 16:51.192–17:03.192). The meeting did not settle a contrastive-learning objective or make an LLM part of that objective. [A06](transcript.md#a06) · [A07](transcript.md#a07)

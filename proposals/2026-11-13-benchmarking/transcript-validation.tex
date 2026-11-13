@@ -1,0 +1,43 @@
+\documentclass{article}
+\usepackage[preprint]{neurips_2023}
+\makeatletter
+\renewcommand{\@noticestring}{}
+\makeatother
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath,amssymb}
+
+\title{JEP-03 Transcript Validation Protocol}
+\author{Peter Driscoll}
+
+\begin{document}
+\maketitle
+
+\section{Introduction and Objectives}
+The JEP-03 Casanare proceedings comprise extensive audiovisual recordings of hearings before the Special Jurisdiction for Peace (JEP). To support downstream legal analysis, entity extraction, and representation learning, speech-to-text (STT) transcripts must undergo rigorous quality assurance. This protocol defines the sampling methodology, error-rate estimation, and audit thresholds for validating automated transcripts against the originating hearing recordings.
+
+\section{Validation Methodology}
+\subsection{Sampling Frame.}
+Transcripts will be audited using human review across 60 randomly selected, non-overlapping one-minute intervals drawn uniformly from the corpus of JEP-03 hearing video recordings. The stratified audit covers both continuous speech segments and interval boundaries to inspect potential alignment drift or recording dropouts.
+
+\subsection{Error-Rate Estimation and Confidence Bounds.}
+For each audited window, human reviewers will transcribe the audio verbatim and document word error rates (WER) and character error rates (CER) against the automated transcript. 
+
+Given the sample of $n = 60$ intervals, the estimated transcription error rate $\hat{p}$ will be documented with two-sided 95\% confidence bounds ($\alpha = 0.05$) using the Wilson score interval:
+\[
+CI_{0.95} = \frac{\hat{p} + \frac{z^2}{2n} \pm z \sqrt{\frac{\hat{p}(1-\hat{p})}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}
+\]
+where $z = \Phi^{-1}(1 - \alpha/2) \approx 1.96$.
+
+\section{Quality Control and Remediation Thresholds}
+A materially high error rate (exceeding established tolerance for legal discourse) will trigger secondary remediation:
+\begin{enumerate}
+    \item \textbf{Acoustic \& STT Adaptation:} Fine-tuning specialized Colombian Spanish acoustic/speech-to-text models on verified hearing segments.
+    \item \textbf{Active Learning Human Verification:} Margin-aware support vector machine (SVM) uncertainty sampling to identify low-confidence transcript spans for targeted expert review.
+\end{enumerate}
+
+\end{document}
+

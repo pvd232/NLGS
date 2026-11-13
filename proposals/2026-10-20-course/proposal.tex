@@ -1,0 +1,164 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,enumitem,xcolor,hyperref,titlesec,fancyhdr,amsmath,amssymb,booktabs,array}
+\hypersetup{colorlinks=true,urlcolor=blue,linkcolor=black,pdftitle={Preserving victims' accounts in JEP summaries}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+\linespread{1}
+\setlist[itemize]{leftmargin=*,nosep,topsep=3pt}
+\titleformat{\section}{\normalsize\bfseries}{}{0pt}{}
+\titlespacing*{\section}{0pt}{5pt}{3pt}
+\pagestyle{fancy}\fancyhf{}\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert_2}
+\newcommand{\paperentry}[3]{\item\relax #1
+\begin{itemize}\item \textbf{Similar:} #2
+\item \textbf{Different:} #3\end{itemize}\vspace{5pt}}
+\begin{document}
+\begin{center}
+{\large\bfseries Preserving victims' accounts in JEP summaries}\\[4pt]
+Peter Driscoll \(\cdot\) pvd2112 \(\cdot\) COMS 6975\\
+Semester research proposal
+\end{center}
+
+\textbf{Part 1. Research proposal (80 points)}
+
+\section{1. Research question and task}
+The Transitional Justice Court of Colombia (JEP) is responsible for adjudicating crimes committed during the Colombian civil war. The court has engaged with Columbia to use ML and AI to learn representations of the moral quandaries posed in Spanish testimony from JEP-03 Casanare. These include victims' experienced \textbf{harm and their demands for reparations, restoration, and sanctions}. With the help of the UN, the court envisions disseminating these representations as foundational primitives for future transitional justice efforts.
+
+The research question is whether learned representations can outperform off-the-shelf LLMs through conditional semantic textual similarity (C-STS) for downstream clustering and semantic summarization. This project capitalizes on the collaboration with expert annotators at Columbia and JEP to improve supervision for C-STS encoders. The study will test whether teaching an encoder to represent the same semantic change consistently across narratives improves passage grouping and summaries. Experts will induce the semantic change through targeted edits to the encoder inputs. These edits target consistent changes under the selected condition, allowing regularization of semantic similarity.
+
+\section{2. Datasets (13 points)}
+The source data are videos of the JEP-03 Casanare hearings. Audio will be transcribed using a speech-to-text model. A stratified random audit of recording windows, including transcript gaps, will estimate transcription errors [12]. LLM extraction provides a baseline for testing whether pretrained domain and language-specific BERT encoders improve passage identification. Related recordings will be grouped after a preliminary review and assigned to the same training, development, or test set. Extracted passages and their edited copies will stay with their source recording.
+
+Peter Dixon and Valentina Vel\'asquez, colleagues in Columbia's Negotiation and Conflict Resolution program, plan a qualitative content analysis of these records. Driscoll and Vel\'asquez will define the codebook and label passages. They will independently score how similar two passages are under each question. Each pair will contain either two original testimony passages or a passage and its edited copy. Scores will range from 0 for no relevant overlap to 1 for equivalent meaning. They will first agree on example pairs and scores, such as 1 for two paraphrases of the same reparation demand. The pilot includes 25 natural pairs and five quartets per category, each containing two originals and their edits. Two JEP annotators confirm that each pair of edits makes the same change in meaning.
+
+\section{3. Models (13 points)}
+BETO is pretrained on general Spanish. Spanish ConfliBERT is adapted to conflict text. JEP-BERT continues BETO pretraining on JEP records outside JEP-03. The three encoders will be compared for passage identification [1,2]. CASE [3] compares passages under a given question using multilingual-E5-large-instruct (E5), an encoder that turns text into vectors. It keeps E5 fixed and learns a \(128\times1024\) projection from expert ratings. Cosine scores from the same fixed features before projection provide the baseline. Candidate summarizers are GPT-6.1 Sol, Claude Opus 5.5, Gemini 4 Argon, and Qwen3.8-27B. The team will compare their development summaries and select one model for the experiment.
+
+\section{4. Novel extensions (14 points)}
+For passage \(x\) and category question \(q\in\{1,2,3,4\}\), \(z_W(x,q)\) is a normalized CASE projection. Similarity is \(s=z_W(x,q)^\top z_W(x',q)\). An edit \(x^+\) gives \(\Delta=z_W(x^+,q)-z_W(x,q)\). The loss is
+\[
+\mathcal L(W)=\tfrac14\sum_{q=1}^{4}
+\left\{\mathbb E_{\mathcal D_q}(s-y)^2+
+\nu\,\mathbb E_{\mathcal M_q}
+\left[\norm{\Delta_i-\Delta_j}-\epsilon\right]_+^2\right\}.
+\]
+Here \(y\) is the mean expert rating, and \(\mathcal D_q\) contains passage pairs rated under question \(q\). Each item in \(\mathcal M_q\) contains two original passages and their edited copies. Experts confirm that the two edits, indexed \(i\) and \(j\), make the same change in meaning under \(q\). Here \([t]_+=\max(t,0)\). The parameter \(\nu\ge0\) controls penalty strength. The tolerance \(\epsilon\ge0\) sets how much the two edit effects may differ before a penalty applies. For example, experts could change the purpose of acknowledgment in both passages from clearing a victim's name to preventing repetition. Learning consistent edit effects may help the encoder recognize the same change in unfamiliar testimony [4,5].
+
+\section{5. Baselines (13 points)}
+The same LLM will summarize passages directly or after CASE groups them. CASE will be trained with ratings alone or with the edit penalty. Both CASE versions use the same expert labels.
+
+Passages start in separate groups. The closest groups merge first, using their least similar pair across the groups to judge closeness. Merging stops at a similarity cutoff chosen on development data. This is complete linkage clustering, applied within each subject. The LLM summarizes each group's original passages, including those that remain alone [7,8].
+
+\section{6. Evaluation and error analysis (13 points)}
+\textbf{Train and tune.} One shared projection and four separate projections will first use the rating loss [6]. The version with lower development rating error will be used for both CASE comparisons.
+
+\textbf{Test similarity predictions.} Predictions for held-out pairs will be compared with expert ratings using mean squared error (MSE) and Spearman correlation. Agreement between experts checks how consistently they apply each question.
+
+\textbf{Generate summaries.} The same LLM will summarize the test passages directly and in groups formed by each CASE version. All three approaches will share a total output limit.
+
+\textbf{Evaluate summaries.} The target is ten testimony sets each for reparations, harm, sanctions, and restoration. Driscoll and Vel\'asquez will independently list relevant claims and agree on an inventory before reading summaries [9]. Coverage is the fraction of listed claims preserved with correct attribution and conditions. Reviewers will flag unsupported claims and score summaries with the grouping method hidden. The LLM judge's scores will be compared with human ratings [13,14].
+
+\section{7. Experiments (14 points)}
+Reviewers will compare passages found by BETO, JEP-BERT, Spanish ConfliBERT, and LLM extraction, counting complete relevant passages and timing corrections.
+
+For each question, the mean training rating will serve as a constant prediction for every test pair. CASE will also be trained on shuffled ratings to test whether the expert judgments improve its predictions.
+
+The three methods will summarize passages chosen by reviewers, then passages found by the detector. Scoring both against the same claim inventory will measure how extraction affects coverage.
+
+\section{8. Feasibility, milestones, and responsibilities}
+Driscoll runs experiments. The CASE projection will train on one GPU using cached E5 features. Vel\'asquez contributes annotation for both studies. The edit pilot requests 8--12 JEP hours. Baselines and initial edit results are due November 4. Four-category evaluation is due December 16. Expert delays would limit edit tests to the pilot.
+
+\clearpage
+\setlength{\parskip}{5pt}
+\titlespacing*{\section}{0pt}{9pt}{3pt}
+\textbf{Part 2. Related-work outline (10 points)}
+
+Numbers match the citations in Part 1.
+
+\begin{enumerate}[label=\textbf{\arabic*.},leftmargin=*]
+\paperentry{S. Gururangan, A. Marasovi\'{c}, S. Swayamdipta, K. Lo, I. Beltagy, D. Downey, and N. A. Smith. 2020. \emph{Don't Stop Pretraining: Adapt Language Models to Domains and Tasks}. ACL. \url{https://aclanthology.org/2020.acl-main.740/}.} % <!-- direct-prose: allow -->
+{Both continue pretraining on domain text before training a task model.}
+{This project adapts BETO to extract JEP passages and measure how well summaries retain their information.}
+
+\paperentry{W. Yang, S. Alsarra, L. Abdeljaber, N. Zawad, Z. Delaram, J. Osorio, L. Khan, P. T. Brandt, and V. D'Orazio. 2023. \emph{ConfliBERT-Spanish: A Pre-trained Spanish Language Model for Political Conflict and Violence}. IEEE CiSt. \url{https://javierosorio.net/research/Yang_2023_ConfliBERT_Spanish.pdf}.}
+{The paper adapts Spanish BERT models to conflict text. This project uses its BETO checkpoint as a detector baseline.}
+{This project trains on JEP records and compares backbones using identical task labels and classifier heads.}
+
+\paperentry{G. Zhang, Y. Zhou, and D. Bollegala. 2026. \emph{CASE: Condition-Aware Sentence Embeddings for Conditional Semantic Textual Similarity Measurement}. EACL. \url{https://aclanthology.org/2026.eacl-long.231/}.}
+{Both keep the encoder fixed and train a projection to predict similarity ratings.}
+{The proposed loss penalizes inconsistent effects of matched edits to test whether summaries preserve more information.}
+
+\paperentry{D. Kaushik, E. Hovy, and Z. C. Lipton. 2020. \emph{Learning the Difference that Makes a Difference with Counterfactually-Augmented Data}. ICLR. \url{https://arxiv.org/abs/1909.12434}.}
+{Both use human edits to change a targeted property while keeping the text coherent.}
+{This project uses matched edits to teach the encoder the same semantic change across narratives under a question.}
+
+\paperentry{S. Reed, Yi Zhang, Yuting Zhang, and H. Lee. 2015. \emph{Deep Visual Analogy-Making}. NeurIPS. \href{https://proceedings.neurips.cc/paper_files/paper/2015/file/e07413354875be01a996dc560274708e-Paper.pdf}{Published paper}.}
+{Both penalize differences between two vector changes representing a shared transformation.}
+{This project applies that idea to JEP text, with a question for each certified change and a tolerance for imperfect matches.}
+\end{enumerate}
+
+\clearpage
+\textbf{Part 2. Related-work outline (continued)}
+\begin{enumerate}[label=\textbf{\arabic*.},leftmargin=*,start=6]
+\paperentry{R. Caruana. 1997. \emph{Multitask Learning}. Machine Learning. \url{https://www.cs.cornell.edu/~caruana/mlj97.pdf}.}
+{Both train related tasks together through a shared representation.}
+{This project compares one projection trained on all four questions with a separate projection for each question.}
+
+\paperentry{O. Ernst, A. Caciularu, O. Shapira, R. Pasunuru, M. Bansal, J. Goldberger, and I. Dagan. 2022. \emph{Proposition-Level Clustering for Multi-Document Summarization}. NAACL. \url{https://aclanthology.org/2022.naacl-main.128/}.}
+{Both group source material by meaning and generate a summary from each group.}
+{This project groups JEP passages using conditional similarities learned from ratings and edits. The LLM receives every eligible passage.}
+
+\paperentry{T. Hosking, H. Tang, and M. Lapata. 2024. \emph{Hierarchical Indexing for Retrieval-Augmented Opinion Summarization}. TACL. \url{https://aclanthology.org/2024.tacl-1.84/}.}
+{Both group source text before an LLM summarizes it.}
+{This project sends every eligible passage to the summarizer, including singletons, and checks conditions and attribution.}
+
+\paperentry{A. Nenkova and R. Passonneau. 2004. \emph{Evaluating Content Selection in Summarization: The Pyramid Method}. HLT-NAACL. \url{https://aclanthology.org/N04-1019/}.}
+{Both measure which semantic information units a summary contains.}
+{This project builds the inventory from testimony, weights each unit equally, and requires correct conditions and attribution.}
+
+\paperentry{J. Tu, K. Xu, L. Yue, B. Ye, K. Rim, and J. Pustejovsky. 2024. \emph{Linguistically Conditioned Semantic Textual Similarity}. ACL. \url{https://aclanthology.org/2024.acl-long.64/}.}
+{Both use explicit conditions to compare texts and examine annotation quality.}
+{This project trains passage representations with matched edits and evaluates how much information summaries preserve.}
+\end{enumerate}
+
+\clearpage
+\textbf{Part 2. Related-work outline (continued)}
+\begin{enumerate}[label=\textbf{\arabic*.},leftmargin=*,start=11]
+\paperentry{S. Tirunagari, M. Dhami, and D. Windridge. 2026. \emph{Margin-Aware Active Learning for User-Adaptive Text Classification}. NLPIR 2025 proceedings, Springer, pp. 447--461. \url{https://doi.org/10.1007/978-3-032-20897-2_33}.}
+{Both address learning with a limited human annotation budget.}
+{This project uses expert judgments to train conditional embeddings for JEP testimony. Transcript audits use random recording windows.}
+
+\paperentry{A. Koenecke, A. S. G. Choi, K. X. Mei, H. Schellmann, and M. Sloane. 2024. \emph{Careless Whisper: Speech-to-Text Hallucination Harms}. FAccT. \url{https://doi.org/10.1145/3630106.3658996}.}
+{Both check speech-to-text output against audio for invented content.}
+{This project audits Spanish JEP testimony for changes to meaning and attribution and estimates local error rates from sampled recording windows.}
+
+\paperentry{L. Zheng, W.-L. Chiang, Y. Sheng, S. Zhuang, Z. Wu, Y. Zhuang, Z. Lin, Z. Li, D. Li, E. P. Xing, H. Zhang, J. E. Gonzalez, and I. Stoica. 2023. \emph{Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena}. NeurIPS. \url{https://doi.org/10.52202/075280-2020}.}
+{Both compare LLM judgments with human judgments.}
+{The proposed judge checks coverage and evidence support in Spanish testimony, using the human scores already planned for summary evaluation.}
+
+\paperentry{A. Fisch, J. Maynez, R. A. Hofer, B. Dhingra, A. Globerson, and W. W. Cohen. 2024. \emph{Stratified Prediction-Powered Inference for Effective Hybrid Evaluation of Language Models}. NeurIPS. \url{https://doi.org/10.52202/079017-3541}.}
+{Both use human judgments to assess an automated rater's reliability.}
+{This project checks an LLM judge against human scores for JEP summaries across four categories.}
+\end{enumerate}
+
+\textbf{Model and implementation references.}
+Embedding: \href{https://huggingface.co/intfloat/multilingual-e5-large-instruct}{multilingual-E5-large-instruct}.
+Generator candidates: \href{https://developers.openai.com/api/docs/models/gpt-6.1-sol}{GPT-6.1 Sol},
+\href{https://platform.claude.com/docs/en/models/opus-5-5/overview}{Claude Opus 5.5},
+\href{https://ai.google.dev/gemini-api/docs/models/gemini-4-argon}{Gemini 4 Argon}, and
+\href{https://huggingface.co/Qwen/Qwen3.8-27B}{Qwen3.8-27B}.
+CASE pooling and prompts: \href{https://github.com/LivNLP/CASE/blob/main/llm_encoders.py}{released encoder code}. Model and code versions will be fixed before experiments.
+
+\clearpage
+\textbf{Part 3. AI analysis (10 points)}
+
+\textbf{Use of AI.} ChatGPT helped find and review related papers, brainstorm the loss function, check the math, and format the proposal in LaTeX. It also helped review the methods and edit unclear passages.
+
+\textbf{Problem 1: Explaining the contribution.} Some responses mixed CASE's projection method with the proposed edit penalty. Checking the paper's equations against the proposed loss helps identify what this project adds.
+
+\textbf{Problem 2: Editing.} Some edits removed model names or shortened explanations until the steps became unclear. Comparing revisions with the previous draft helps catch missing details.
+
+\end{document}
